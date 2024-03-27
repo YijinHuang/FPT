@@ -2,7 +2,7 @@
 
 This is the pytorch implementation of the paper:
 
-> Y. Huang, P. Cheng, R. Tam and X. Tang, "FPT: Fine-grained Prompt Tuning for Parameter and Memory Efficient Fine Tuning in High-resolution Medical Image Classification", under review, 2024. \[[arxiv](https://arxiv.org/abs/2403.07576)\]
+> "FPT: Fine-grained Prompt Tuning for Parameter and Memory Efficient Fine Tuning in High-resolution Medical Image Classification", under review, 2024.
 
 We present Fine-grained Prompt Tuning (FPT), a novel PEFT method for medical image classification. FPT significantly reduces memory consumption compared to other PEFT methods, especially in high-resolution contexts. FPT achieves comparable performance to fine-tuning the entire LPM while using only 1.8% of the learnable parameters and 13% of the memory costs of an encoder ViT-B model with a 512x512 input resolution.
 ![](./framework.png)
@@ -11,8 +11,6 @@ We present Fine-grained Prompt Tuning (FPT), a novel PEFT method for medical ima
 ## Installation
 To install the dependencies, run:
 ```shell
-git clone https://github.com/YijinHuang/FPT.git
-cd FPT
 conda create -n fpt python=3.8
 conda activate fpt
 pip install -r requirements.txt
@@ -71,17 +69,4 @@ $ python main.py --config ./configs/messidor2.yaml --preload --preload-path ./pr
 else:
 ```shell
 $ python main.py --config ./configs/messidor2.yaml
-```
-
-
-## Citation
-
-If you find this repository useful, please cite the paper:
-```
-@article{huang2024fpt,
-  title={FPT: Fine-grained Prompt Tuning for Parameter and Memory Efficient Fine Tuning in High-resolution Medical Image Classification},
-  author={Huang, Yijin and Cheng, Pujin and Tam, Roger and Tang, Xiaoying},
-  journal={arXiv preprint arXiv:2403.07576},
-  year={2024}
-}
 ```
