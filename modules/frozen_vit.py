@@ -46,6 +46,20 @@ VIT_PRETRAINED_MODEL_ARCHIVE_LIST = [
 ]
 
 
+def important_token_selection(key_layer, value_layer, attention_probs, token_ratio, token_imp):
+    N = attention_probs.shape[-1]
+    num_patch = int(N * token_ratio)
+    if token_imp == 'global':
+        highlights = attention_probs.mean(dim=-2).topk(num_patch, dim=-1).indices
+    elif token_imp == 'class_token':
+        highlights = attention_probs[:,:,0].topk(num_patch, dim=-1).indices
+
+    highlights = highlights.unsqueeze(-1).repeat(1, 1, 1, key_layer.shape[-1])
+    k_highlights = torch.gather(key_layer, dim=-2, index=highlights)
+    v_highlights = torch.gather(value_layer, dim=-2, index=highlights)
+    return k_highlights, v_highlights
+
+
 class ViTEmbeddings(nn.Module):
     """
     Construct the CLS token, position and patch embeddings. Optionally, also the mask token.
@@ -224,16 +238,13 @@ class ViTSelfAttention(nn.Module):
         outputs = (context_layer, attention_probs) if output_attentions else (context_layer,)
 
         # extract important token
-        N = attention_probs.shape[-1]
-        num_patch = int(N * self.config.token_ratio)
-        if self.config.token_imp == 'global':
-            highlights = attention_probs.mean(dim=-2).topk(num_patch, dim=-1).indices
-        else:
-            highlights = attention_probs[:,:,0].topk(num_patch, dim=-1).indices
-
-        highlights = highlights.unsqueeze(-1).repeat(1, 1, 1, key_layer.shape[-1])
-        k_highlights = torch.gather(key_layer, dim=-2, index=highlights)
-        v_highlights = torch.gather(value_layer, dim=-2, index=highlights)
+        k_highlights, v_highlights = important_token_selection(
+            key_layer,
+            value_layer,
+            attention_probs,
+            self.config.token_ratio,
+            self.config.token_imp
+        )
         return outputs, k_highlights, v_highlights
 
 

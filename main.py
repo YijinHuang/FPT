@@ -39,7 +39,10 @@ def main():
     cfg.base.preload = args.preload
     cfg.base.preload_path = args.preload_path
     if cfg.base.preload and not cfg.base.preload_path:
-        error_message = 'Preloading is enabled but preload_root is not set. Please use --preload-path to specify the path or disable preloading.'
+        error_message = 'Preloading is enabled but preload_path is not set. Please use --preload-path to specify the path or disable preloading.'
+        raise ValueError(error_message)
+    if cfg.base.preload_path and not cfg.base.preload:
+        error_message = 'Preloading path is set but preloading is disabled. Please use --preload to enable preloading.'
         raise ValueError(error_message)
 
     os.makedirs(cfg.base.save_path, exist_ok=True)
