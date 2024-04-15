@@ -34,7 +34,7 @@ train:
   loss_weight_decay_rate: 0 # if loss_weights is dynamic, loss weight will decay from balance to equivalent weights
   warmup_epochs: 0 # set to 0 to disable warmup
   metrics: [acc, f1, auc, precision, recall, kappa] # available metrics are list in utils.metrics
-  indicator: kappa # indicator for best model selection in validation set
+  indicator: auc # indicator for best model selection in validation set
   save_interval: 10 # the epoch interval of saving model
   eval_interval: 1 # the epoch interval of evaluating model on val dataset
   sample_view: false # save and visualize a batch of images on Tensorboard
