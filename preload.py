@@ -47,7 +47,6 @@ def generate_dataset(cfg):
     val_path = os.path.join(data_path, 'val')
 
     preprocess = transforms.Compose([
-        transforms.Resize((cfg.data.coarse_input_size, cfg.data.coarse_input_size)),
         transforms.Resize((cfg.data.fine_input_size, cfg.data.fine_input_size)),
         transforms.ToTensor(),
         transforms.Normalize(cfg.data.mean, cfg.data.std)
