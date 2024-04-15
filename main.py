@@ -16,6 +16,10 @@ def main():
     cfg = load_config(args.config)
     cfg = munchify(cfg)
 
+    # configurate preload
+    cfg.base.preload = True if args.preload_path is not None else False
+    cfg.base.preload_path = args.preload_path
+
     # print configuration
     print_msg('LOADING CONFIG FILE: {}'.format(args.config))
     print_config({
@@ -34,16 +38,6 @@ def main():
             cfg.base.save_path = new_save_path
             warning = 'Save path {} exists. New save path is set to be {}.'.format(save_path, new_save_path)
             print_msg(warning, warning=True)
-
-    # check preloading
-    cfg.base.preload = args.preload
-    cfg.base.preload_path = args.preload_path
-    if cfg.base.preload and not cfg.base.preload_path:
-        error_message = 'Preloading is enabled but preload_path is not set. Please use --preload-path to specify the path or disable preloading.'
-        raise ValueError(error_message)
-    if cfg.base.preload_path and not cfg.base.preload:
-        error_message = 'Preloading path is set but preloading is disabled. Please use --preload to enable preloading.'
-        raise ValueError(error_message)
 
     os.makedirs(cfg.base.save_path, exist_ok=True)
     copy_config(args.config, cfg.base.save_path)

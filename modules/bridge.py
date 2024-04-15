@@ -51,4 +51,5 @@ class FusionModule(torch.nn.Module):
         context_layer = context_layer.view(new_context_layer_shape)
         context_layer = self.out_proj(context_layer)
         context_layer = self.dropout(context_layer)
+        context_layer = context_layer + prompts
         return context_layer

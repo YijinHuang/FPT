@@ -64,7 +64,7 @@ $ python preload.py --config ./configs/messidor2.yaml --preload-path ./preload_f
 
 If preloading is enabled:
 ```shell
-$ python main.py --config ./configs/messidor2.yaml --preload --preload-path ./preload_features/messidor2
+$ python main.py --config ./configs/messidor2.yaml --preload-path ./preload_features/messidor2
 ```
 else:
 ```shell

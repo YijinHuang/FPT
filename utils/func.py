@@ -23,12 +23,6 @@ def parse_config():
         help='Path to the config file.'
     )
     parser.add_argument(
-        '--preload',
-        action='store_true',
-        default=False,
-        help='Preload the dataset.'
-    )
-    parser.add_argument(
         '--preload-path',
         type=str,
         default=None,
