@@ -167,10 +167,6 @@ def exit_with_error(msg):
     sys.exit(1)
 
 
-def is_main(cfg):
-    return cfg.accelerator.is_main_process
-
-
 def config_check(cfg):
     warning = None
     if cfg.scheduler_args.cosine.T_max != cfg.train.epochs & cfg.config_check.cosine_decay_epochs:

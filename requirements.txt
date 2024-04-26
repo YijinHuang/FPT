@@ -3,7 +3,6 @@ munch==2.5.0
 torch==2.0.0
 PyYAML==6.0
 torcheval==0.0.6
-accelerate==0.21.0
 safetensors==0.3.2
 torchvision==0.15.1
 transformers==4.29.1

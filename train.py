@@ -13,11 +13,9 @@ from modules.scheduler import *
 
 def train(cfg, frozen_encoder, model, train_dataset, val_dataset, estimator):
     device = cfg.base.device
-    accelerator = cfg.accelerator
     optimizer = initialize_optimizer(cfg, model)
     loss_function, loss_weight_scheduler = initialize_loss(cfg, train_dataset)
     train_loader, val_loader = initialize_dataloader(cfg, train_dataset, val_dataset)
-    model, optimizer, train_loader, val_loader = accelerator.prepare(model, optimizer, train_loader, val_loader)
 
     # start training
     model.train()
@@ -54,30 +52,24 @@ def train(cfg, frozen_encoder, model, train_dataset, val_dataset, estimator):
 
             # backward
             optimizer.zero_grad()
-            accelerator.backward(loss)
-            if accelerator.sync_gradients:
-                accelerator.clip_grad_norm_(model.parameters(), 1)
+            loss.backward()
+            nn.utils.clip_grad_norm_(model.parameters(), 1)
             optimizer.step()
 
-            if is_main(cfg):
-                cfg.accelerator.gather(y_pred)
-                cfg.accelerator.gather(y)
+            epoch_loss += loss.item()
+            avg_loss = epoch_loss / (step + 1)
 
-                epoch_loss += loss.item()
-                avg_loss = epoch_loss / (step + 1)
-
-                estimator.update(y_pred, y)
-                message = 'epoch: [{} / {}], cls_loss: {:.6f}, lr: {:.4f}'.format(epoch + 1, cfg.train.epochs, avg_loss, lr)
-                if cfg.base.progress:
-                    progress.set_description(message)
+            estimator.update(y_pred, y)
+            message = 'epoch: [{} / {}], cls_loss: {:.6f}, lr: {:.4f}'.format(epoch + 1, cfg.train.epochs, avg_loss, lr)
+            if cfg.base.progress:
+                progress.set_description(message)
             
-        if is_main(cfg) and not cfg.base.progress:
+        if not cfg.base.progress:
             print(message)
 
-        if is_main(cfg):
-            train_scores = estimator.get_scores(4)
-            scores_txt = ', '.join(['{}: {}'.format(metric, score) for metric, score in train_scores.items()])
-            print('Training metrics:', scores_txt)
+        train_scores = estimator.get_scores(4)
+        scores_txt = ', '.join(['{}: {}'.format(metric, score) for metric, score in train_scores.items()])
+        print('Training metrics:', scores_txt)
 
         if epoch % cfg.train.save_interval == 0:
             save_name = 'checkpoint_{}.pt'.format(epoch)
@@ -92,14 +84,13 @@ def train(cfg, frozen_encoder, model, train_dataset, val_dataset, estimator):
 
             # save model
             indicator = val_scores[cfg.train.indicator]
-            if is_main(cfg) and indicator > max_indicator:
+            if indicator > max_indicator:
                 save_name = 'best_validation_weights.pt'
                 save_checkpoint(cfg, model, save_name)
                 max_indicator = indicator
 
-    if is_main(cfg):
-        save_name = 'final_weights.pt'
-        save_checkpoint(cfg, model, save_name)
+    save_name = 'final_weights.pt'
+    save_checkpoint(cfg, model, save_name)
 
 
 def evaluate(cfg, frozen_encoder, model, test_dataset, estimator):
@@ -114,14 +105,13 @@ def evaluate(cfg, frozen_encoder, model, test_dataset, estimator):
     print('Running on Test set...')
     eval(cfg, frozen_encoder, model, test_loader, estimator, cfg.base.device)
 
-    if is_main(cfg):
-        print('================Finished================')
-        test_scores = estimator.get_scores(6)
-        for metric, score in test_scores.items():
-            print('{}: {}'.format(metric, score))
-        print('Confusion Matrix:')
-        print(estimator.get_conf_mat())
-        print('========================================')
+    print('================Finished================')
+    test_scores = estimator.get_scores(6)
+    for metric, score in test_scores.items():
+        print('{}: {}'.format(metric, score))
+    print('Confusion Matrix:')
+    print(estimator.get_conf_mat())
+    print('========================================')
 
 
 def eval(cfg, frozen_encoder, model, dataloader, estimator, device):
@@ -145,8 +135,6 @@ def eval(cfg, frozen_encoder, model, dataloader, estimator, device):
         y = select_target_type(y, cfg.train.criterion)
 
         y_pred = model(X_coarse, key_states, value_states)
-        cfg.accelerator.gather(y_pred)
-        cfg.accelerator.gather(y)
 
         estimator.update(y_pred, y)
 
@@ -299,20 +287,13 @@ def adjust_distill_weight(cfg, epoch):
 
 
 def save_checkpoint(cfg, model, save_name):
-    accelerator = cfg.accelerator
-    accelerator.save_state(os.path.join(cfg.base.save_path, 'checkpoints'))
-    state_dict = accelerator.unwrap_model(model).state_dict()
-    accelerator.save(state_dict, os.path.join(cfg.base.save_path, save_name))
-    print_msg('Model save at {}'.format(cfg.base.save_path))
+    save_path = os.path.join(cfg.base.save_path, save_name)
+    torch.save(model.state_dict(), save_path)
+    print_msg('Model saved at {}'.format(save_path))
 
 
-def resume(cfg):
-    accelerator = cfg.accelerator
-    checkpoint_path = os.path.join(cfg.base.save_path, 'checkpoint.pt')
-    if os.path.exists(checkpoint_path):
-        accelerator.print('Loading checkpoint {}'.format(checkpoint_path))
-        accelerator.load_state(checkpoint_path)
-        cfg.start_epoch = int(checkpoint_path.split('_')[1].split('.')[0])
-        accelerator.print('Loaded checkpoint {} from epoch {}'.format(checkpoint_path, cfg.start_epoch))
-    else:
-        accelerator.print('No checkpoint found at {}'.format(checkpoint_path))
+def resume(cfg, model):
+    checkpoint = torch.load(cfg.base.resume_path, map_location=cfg.base.device)
+    model.load_state_dict(checkpoint)
+    print_msg('Model loaded from {}'.format(cfg.base.resume_path))
+    return model

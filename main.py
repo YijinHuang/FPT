@@ -1,7 +1,6 @@
 import os
 
 from munch import munchify
-from accelerate import Accelerator
 from accelerate.utils import set_seed
 
 from utils.func import *
@@ -44,13 +43,6 @@ def main():
 
     if cfg.base.random_seed >= 0:
         set_seed(cfg.base.random_seed)
-
-    accelerator = Accelerator(
-        split_batches=True,
-        mixed_precision='fp16'
-    )
-    cfg.base.device = accelerator.device
-    cfg.accelerator = accelerator
 
     train_dataset, test_dataset, val_dataset = generate_dataset(cfg)
     frozen_encoder, model = generate_model(cfg)
