@@ -1,7 +1,8 @@
 import os
+import random
 
+import numpy as np
 from munch import munchify
-from accelerate.utils import set_seed
 
 from utils.func import *
 from train import train, evaluate
@@ -65,6 +66,13 @@ def main():
     checkpoint = os.path.join(cfg.base.save_path, 'final_weights.pt')
     load_weights(model, checkpoint)
     evaluate(cfg, frozen_encoder, model, test_dataset, estimator)
+
+
+def set_seed(seed):
+    random.seed(seed)
+    np.random.seed(seed)
+    torch.manual_seed(seed)
+    torch.cuda.manual_seed(seed)
 
 
 if __name__ == '__main__':
