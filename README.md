@@ -1,10 +1,10 @@
-# FPT: PEFT for High-resolution Medical Image Classification
+# FPT: PETL for High-resolution Medical Image Classification
 
 This is the pytorch implementation of the paper:
 
-> "FPT: Fine-grained Prompt Tuning for Parameter and Memory Efficient Fine Tuning in High-resolution Medical Image Classification", under review, 2024.
+> Y. Huang, P. Cheng, R. Tam and X. Tang, "Fine-grained Prompt Tuning: A Parameter and Memory Efficient Transfer Learning Method for High-resolution Medical Image Classification", MICCAI, 2024. (accepted) [[arxiv](https://arxiv.org/abs/2403.07576)]
 
-We present Fine-grained Prompt Tuning (FPT), a novel PEFT method for medical image classification. FPT significantly reduces memory consumption compared to other PEFT methods, especially in high-resolution contexts. FPT achieves comparable performance to fine-tuning the entire LPM while using only 1.8% of the learnable parameters and 13% of the memory costs of an encoder ViT-B model with a 512x512 input resolution.
+We present Fine-grained Prompt Tuning (FPT), a novel PETL method for medical image classification. FPT significantly reduces memory consumption compared to other PETL methods, especially in high-resolution contexts. FPT achieves comparable performance to fine-tuning the entire LPM while using only 1.8% of the learnable parameters and 13% of the memory costs of an encoder ViT-B model with a 512x512 input resolution.
 ![](./framework.png)
 
 
