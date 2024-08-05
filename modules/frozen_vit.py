@@ -382,6 +382,7 @@ class ViTEncoder(nn.Module):
     def __init__(self, config: ViTConfig) -> None:
         super().__init__()
         self.config = config
+        self.layers_to_extract = config.layers_to_extract
         self.layer = nn.ModuleList([ViTLayer(config) for _ in range(config.num_hidden_layers)])
         self.gradient_checkpointing = False
 
@@ -419,8 +420,9 @@ class ViTEncoder(nn.Module):
             else:
                 layer_outputs, key_output, value_output = layer_module(hidden_states, layer_head_mask, output_attentions)
 
-                key_states.append(key_output)
-                value_states.append(value_output)
+                if i in self.layers_to_extract:
+                    key_states.append(key_output)
+                    value_states.append(value_output)
 
             hidden_states = layer_outputs[0]
 

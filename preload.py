@@ -1,7 +1,8 @@
+import os
+
 import torch
+import hydra
 from pathlib import Path
-from munch import munchify
-from accelerate import Accelerator
 from torchvision import transforms
 from torch.utils.data import DataLoader
 from safetensors.torch import save_file
@@ -11,19 +12,16 @@ from utils.func import *
 from modules.builder import build_frozen_encoder
 
 
-def main():
-    args = parse_config()
-    cfg = load_config(args.config)
-    cfg = munchify(cfg)
-    cfg.base.preload_path = args.preload_path
+@hydra.main(version_base=None, config_path="configs", config_name="config")
+def main(cfg):
+    if os.path.exists(cfg.dataset.preload_path):
+        print_msg('Preload path {} exists.'.format(cfg.dataset.preload_path), warning=True)
+        print('WARNING: Please update the "preload_path" in "/configs/dataset" '
+              'or add an argument "++dataset.preload_path=new_path" in the command.')
+        return
 
-    accelerator = Accelerator(
-        split_batches=True,
-        mixed_precision='fp16'
-    )
-    cfg.base.device = accelerator.device
-
-    frozen_encoder = build_frozen_encoder(cfg).to(accelerator.device)
+    print('Preloading {} dataset...'.format(cfg.dataset.name))
+    frozen_encoder = build_frozen_encoder(cfg).to(cfg.base.device)
     dataset = generate_dataset(cfg)
     preload_dataset(cfg, dataset, frozen_encoder)
     print('Preloading done.')
@@ -32,24 +30,24 @@ def main():
 def preload_dataset(cfg, dataset, frozen_encoder):
     train_dataset, test_dataset, val_dataset = dataset
     print('Preloading train dataset...')
-    preload(cfg, train_dataset, frozen_encoder, cfg.base.preload_path)
-    print('Preloading val dataset...')
-    preload(cfg, test_dataset, frozen_encoder, cfg.base.preload_path)
+    preload(cfg, train_dataset, frozen_encoder, cfg.dataset.preload_path)
     print('Preloading test dataset...')
-    preload(cfg, val_dataset, frozen_encoder, cfg.base.preload_path)
+    preload(cfg, test_dataset, frozen_encoder, cfg.dataset.preload_path)
+    print('Preloading val dataset...')
+    preload(cfg, val_dataset, frozen_encoder, cfg.dataset.preload_path)
 
 
 def generate_dataset(cfg):
-    data_path = cfg.base.data_path
+    data_path = cfg.dataset.data_path
 
     train_path = os.path.join(data_path, 'train')
     test_path = os.path.join(data_path, 'test')
     val_path = os.path.join(data_path, 'val')
 
     preprocess = transforms.Compose([
-        transforms.Resize((cfg.data.fine_input_size, cfg.data.fine_input_size)),
+        transforms.Resize((cfg.dataset.input_size, cfg.dataset.input_size)),
         transforms.ToTensor(),
-        transforms.Normalize(cfg.data.mean, cfg.data.std)
+        transforms.Normalize(cfg.dataset.mean, cfg.dataset.std)
     ])
 
     train_dataset = FineImageFolder(train_path, preprocess)

@@ -1,0 +1,16 @@
+defaults:
+  - _self_
+  - network: FPT+ # set to FPT to use the FPT network
+  - dataset: messidor2 # define a new yaml file in /config/dataset to apply your own dataset configuration
+  - solver: adamw # note that learning rate is set in the dataset configuration
+  - data_config
+  - train_config
+
+base:
+  device: cuda:0
+  random_seed: -1 # set to -1 to disable random seed
+  cudnn_deterministic: false # set to True to turn on CUDNN deterministic setting, but it may slow down your training
+  overwrite: false # overwrite save_path
+  progress: true # real-time metric display, output cannot be redirected
+  checkpoint: null # path to the checkpoint to resume
+  

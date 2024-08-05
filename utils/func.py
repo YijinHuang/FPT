@@ -15,39 +15,6 @@ from torch.utils.data import DataLoader
 from utils.const import regression_loss
 
 
-def parse_config():
-    parser = argparse.ArgumentParser(allow_abbrev=True)
-    parser.add_argument(
-        '--config',
-        type=str,
-        help='Path to the config file.'
-    )
-    parser.add_argument(
-        '--preload-path',
-        type=str,
-        default=None,
-        help='Path to the preloaded features.'
-    )
-    args = parser.parse_args()
-    return args
-
-
-def load_config(path):
-    with open(path, 'r') as file:
-        cfg = yaml.load(file, Loader=yaml.FullLoader)
-    return cfg
-
-
-def copy_config(src, dst):
-    if os.path.split(src)[0] != dst:
-        shutil.copy(src, dst)
-
-
-def save_config(config, path):
-    with open(path, 'w') as file:
-        yaml.safe_dump(config, file)
-
-
 def mean_and_std(train_dataset, batch_size, num_workers):
     loader = DataLoader(
         train_dataset,
@@ -100,23 +67,6 @@ def print_msg(msg, appendixs=[], warning=False):
     print_fn('=' * max_len)
 
 
-def print_config(configs):
-    for name, config in configs.items():
-        print('====={}====='.format(name))
-        _print_config(config)
-        print('=' * (len(name) + 10))
-        print()
-
-
-def _print_config(config, indentation = ''):
-    for key, value in config.items():
-        if isinstance(value, dict):
-            print('{}{}:'.format(indentation, key))
-            _print_config(value, indentation + '    ')
-        else:
-            print('{}{}: {}'.format(indentation, key, value))
-
-
 def print_dataset_info(datasets):
     train_dataset, test_dataset, val_dataset = datasets
     print('=========================')
@@ -165,28 +115,6 @@ def select_out_features(num_classes, criterion):
 def exit_with_error(msg):
     print(msg)
     sys.exit(1)
-
-
-def config_check(cfg):
-    warning = None
-    if cfg.scheduler_args.cosine.T_max != cfg.train.epochs & cfg.config_check.cosine_decay_epochs:
-        cfg.scheduler_args.cosine.T_max = cfg.train.epochs - cfg.train.warmup_epochs
-        warning = 'The max epoch of cosine decay scheduler is set to be the number of training epochs after warmup, because they are commonly the same. ' \
-                  'If you want to set the max epoch of cosine decay scheduler manually, please set config_check.cosine_decay_epochs in the config file to False.'
-        print_msg(warning, warning=True)
-
-
-def config_update(cfg, params):
-    keys = get_all_keys(cfg)
-    name2key = {key[-1]: key for key in keys}
-    names = list(name2key.keys())
-    for key, value in params.items():
-        if key not in names:
-            raise KeyError('Invalid key: {}'.format(key))
-        if names.count(key) > 1:
-            raise KeyError('Key {} appears more than once, can not be updated'.format(key))
-        ks = name2key[key]
-        get_by_path(cfg, ks[:-1])[ks[-1]] = value
 
 
 def get_by_path(d, path):

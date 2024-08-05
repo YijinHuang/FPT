@@ -1,0 +1,9 @@
+name: messidor2
+data_path: /path/to/dataset/Messidor2/
+preload_path: ./preload_data/messidor2
+save_path: ./runs/messidor2
+input_size: 512 # image resolution for the LPM
+num_classes: 5 # number of classes
+mean: [0.48436370491981506, 0.2238118201494217, 0.07583174854516983] # 'auto' or a list of three numbers for RGB
+std: [0.2939208149909973, 0.14721707999706268, 0.06350880116224289] # 'auto' or a list of three numbers for RGB
+learning_rate: 0.0002 # dataset-specific learning rate

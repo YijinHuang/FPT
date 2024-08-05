@@ -1,0 +1,9 @@
+name: chncxr
+data_path: /path/to/dataset/CHNCXR/
+preload_path: ./preload_data/chncxr
+save_path: ./runs/chncxr
+input_size: 512 # image resolution for the LPM
+num_classes: 2 # number of classes
+mean: [0.6105489, 0.6105489, 0.6105489] # 'auto' or a list of three numbers for RGB
+std: [0.25847816, 0.25847816, 0.25847816] # 'auto' or a list of three numbers for RGB
+learning_rate: 0.0005 # dataset-specific learning rate

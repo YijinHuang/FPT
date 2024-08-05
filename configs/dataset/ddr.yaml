@@ -1,0 +1,9 @@
+name: ddr
+data_path: /path/to/dataset/DDR/
+preload_path: ./preload_data/ddr
+save_path: ./runs/ddr
+input_size: 512 # image resolution for the LPM
+num_classes: 5 # number of classes
+mean: [0.423737496137619, 0.2609460651874542, 0.128403902053833] # 'auto' or a list of three numbers for RGB
+std: [0.29482534527778625, 0.20167365670204163, 0.13668020069599152] # 'auto' or a list of three numbers for RGB
+learning_rate: 0.0005 # dataset-specific learning rate

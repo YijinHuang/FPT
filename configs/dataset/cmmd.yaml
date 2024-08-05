@@ -1,0 +1,10 @@
+name: cmmd
+data_path: /path/to/dataset/CMMD/
+preload_path: ./preload_data/cmmd
+save_path: ./runs/cmmd
+input_size: 512 # image resolution for the LPM
+num_classes: 2 # number of classes
+mean: [0.16735267639160156, 0.16735267639160156, 0.16735267639160156] # 'auto' or a list of three numbers for RGB
+std: [0.18016798794269562, 0.18016798794269562, 0.18016798794269562] # 'auto' or a list of three numbers for RGB
+learning_rate: 0.00005 # dataset-specific learning rate
+  

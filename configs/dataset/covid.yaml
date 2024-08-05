@@ -1,0 +1,9 @@
+name: covid
+data_path: /path/to/dataset/COVID/
+preload_path: ./preload_data/covid
+save_path: ./runs/covid
+input_size: 512 # image resolution for the LPM
+num_classes: 3 # number of classes
+mean: [0.498341828584671, 0.4986386299133301, 0.49894729256629944] # 'auto' or a list of three numbers for RGB
+std: [0.2426202893257141, 0.24259139597415924, 0.242642343044281] # 'auto' or a list of three numbers for RGB
+learning_rate: 0.0001 # dataset-specific learning rate

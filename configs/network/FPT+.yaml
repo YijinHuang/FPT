@@ -1,0 +1,7 @@
+num_prompts: 16
+reduction_ratio: 8
+layers_to_extract: 6-11 # use x-y to present a range of layers, or use x,y,z to present a list of layers
+token_ratio: 0.2
+token_imp: global
+side_input_size: 128 # down-sampled image resolution for the side network
+pretrained_path: google/vit-base-patch16-384 # pretrained model weights for LPM

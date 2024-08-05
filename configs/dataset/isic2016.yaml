@@ -1,0 +1,9 @@
+name: isic2016
+data_path: /path/to/dataset/ISIC2016/
+preload_path: ./preload_data/isic2016
+save_path: ./runs/isic2016
+input_size: 512 # image resolution for the LPM
+num_classes: 2 # number of classes
+mean: [0.7243882417678833, 0.6187167167663574, 0.5664605498313904] # 'auto' or a list of three numbers for RGB
+std: [0.16384567320346832, 0.17090138792991638, 0.19106049835681915] # 'auto' or a list of three numbers for RGB
+learning_rate: 0.005 # dataset-specific learning rate

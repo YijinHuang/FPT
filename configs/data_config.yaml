@@ -1,0 +1,28 @@
+data_augmentation_args:
+  horizontal_flip:
+    prob: 0.5
+  vertical_flip:
+    prob: 0.5
+  color_distortion:
+    prob: 1.0
+    brightness: 0.2
+    contrast: 0.2
+    saturation: 0
+    hue: 0
+  random_crop: # randomly crop and resize to input_size
+    prob: 1.0
+    scale: [0.8, 1.0] # range of size of the origin size cropped
+    ratio: [0.7, 1.3] # range of aspect ratio of the origin aspect ratio cropped
+  rotation:
+    prob: 1.0
+    degrees: [-30, 30]
+  translation:
+    prob: 1
+    range: [0.2, 0.2]
+  grayscale: # randomly convert image to grayscale
+    prob: 0.2
+  gaussian_blur: # only available for torch version >= 1.7.1.
+    prob: 0.2
+    kernel_size: 7
+    sigma: 0.1
+  value_fill: 0 # NOT a data augmentation operation. pixel fill value for the area outside the image

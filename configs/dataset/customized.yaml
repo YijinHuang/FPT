@@ -1,0 +1,9 @@
+name: customized
+data_path: ??? # path to the dataset
+preload_path: ??? # path to the preloaded data
+save_path: ./runs/exp # path to save the experiment results
+input_size: 512 # image resolution for the LPM
+num_classes: ??? # number of classes
+mean: 'auto' # 'auto' or a list of three numbers for RGB
+std: 'auto' # 'auto' or a list of three numbers for RGB
+learning_rate: 0.0001 # dataset-specific learning rate

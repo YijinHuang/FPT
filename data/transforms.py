@@ -70,7 +70,7 @@ def data_transforms(cfg):
 
         return operations
 
-    operations = get_operations(aug_args, cfg.data.coarse_input_size)
+    operations = get_operations(aug_args, cfg.network.side_input_size)
     augmentations = []
     for op in weak_data_aug:
         if op not in operations:
@@ -79,22 +79,22 @@ def data_transforms(cfg):
 
     normalization = [
         transforms.ToTensor(),
-        transforms.Normalize(cfg.data.mean, cfg.data.std)
+        transforms.Normalize(cfg.dataset.mean, cfg.dataset.std)
     ]
-    fine_resize = transforms.Resize((cfg.data.fine_input_size, cfg.data.fine_input_size))
-    coarse_resize = transforms.Resize((cfg.data.coarse_input_size, cfg.data.coarse_input_size))
+    lpm_resize = transforms.Resize((cfg.dataset.input_size, cfg.dataset.input_size))
+    side_resize = transforms.Resize((cfg.network.side_input_size, cfg.network.side_input_size))
 
-    if cfg.base.preload:
+    if cfg.dataset.preload_path:
         train_preprocess = transforms.Compose([*augmentations, *normalization])
-        test_preprocess = transforms.Compose([coarse_resize, *normalization])
+        test_preprocess = transforms.Compose([side_resize, *normalization])
     else:
-        train_fine_preprocess = transforms.Compose([fine_resize, *normalization])
-        train_coarse_preprocess = transforms.Compose([*augmentations, *normalization])
-        test_fine_preprocess = transforms.Compose([fine_resize, *normalization])
-        test_coarse_preprocess = transforms.Compose([coarse_resize, *normalization])
+        train_lpm_preprocess = transforms.Compose([lpm_resize, *normalization])
+        train_side_preprocess = transforms.Compose([*augmentations, *normalization])
+        test_lpm_preprocess = transforms.Compose([lpm_resize, *normalization])
+        test_side_preprocess = transforms.Compose([side_resize, *normalization])
 
-        train_preprocess = (train_fine_preprocess, train_coarse_preprocess)
-        test_preprocess = (test_fine_preprocess, test_coarse_preprocess)
+        train_preprocess = (train_lpm_preprocess, train_side_preprocess)
+        test_preprocess = (test_lpm_preprocess, test_side_preprocess)
 
     return train_preprocess, test_preprocess
 

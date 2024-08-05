@@ -17,10 +17,15 @@ def train(cfg, frozen_encoder, model, train_dataset, val_dataset, estimator):
     loss_function, loss_weight_scheduler = initialize_loss(cfg, train_dataset)
     train_loader, val_loader = initialize_dataloader(cfg, train_dataset, val_dataset)
 
+    # check resume
+    start_epoch = 0
+    if cfg.base.checkpoint:
+        start_epoch = resume(cfg, model, optimizer)
+
     # start training
     model.train()
     max_indicator = 0
-    for epoch in range(cfg.train.epochs):
+    for epoch in range(start_epoch, cfg.train.epochs):
         # update loss weights
         if loss_weight_scheduler:
             weight = loss_weight_scheduler.step()
@@ -33,21 +38,22 @@ def train(cfg, frozen_encoder, model, train_dataset, val_dataset, estimator):
             scheduler_step = epoch + step / len(train_loader)
             lr = adjust_learning_rate(cfg, optimizer, scheduler_step)
 
-            if cfg.base.preload:
-                X_coarse, key_states, value_states, y = train_data
+            if cfg.dataset.preload_path:
+                X_side, key_states, value_states, y = train_data
                 key_states, value_states = key_states.to(device), value_states.to(device)
                 key_states = key_states.transpose(0, 1)
                 value_states = value_states.transpose(0, 1)
             else:
-                X_fine, X_coarse, y = train_data
-                X_fine = X_fine.to(device)
+                X_lpm, X_side, y = train_data
+                X_lpm = X_lpm.to(device)
                 with torch.no_grad():
-                    _, key_states, value_states = frozen_encoder(X_fine, interpolate_pos_encoding=True)
+                    _, key_states, value_states = frozen_encoder(X_lpm, interpolate_pos_encoding=True)
 
-            X_coarse, y = X_coarse.to(device), y.to(device)
+            X_side, y = X_side.to(device), y.to(device)
             y = select_target_type(y, cfg.train.criterion)
+
             # forward
-            y_pred = model(X_coarse, key_states, value_states)
+            y_pred = model(X_side, key_states, value_states)
             loss = loss_function(y_pred, y)      
 
             # backward
@@ -72,8 +78,8 @@ def train(cfg, frozen_encoder, model, train_dataset, val_dataset, estimator):
         print('Training metrics:', scores_txt)
 
         if epoch % cfg.train.save_interval == 0:
-            save_name = 'checkpoint_{}.pt'.format(epoch)
-            save_checkpoint(cfg, model, save_name)
+            save_name = 'checkpoint.pt'
+            save_checkpoint(cfg, model, epoch, optimizer, save_name)
 
         # validation performance
         if epoch % cfg.train.eval_interval == 0:
@@ -86,11 +92,11 @@ def train(cfg, frozen_encoder, model, train_dataset, val_dataset, estimator):
             indicator = val_scores[cfg.train.indicator]
             if indicator > max_indicator:
                 save_name = 'best_validation_weights.pt'
-                save_checkpoint(cfg, model, save_name)
+                save_weights(cfg, model, save_name)
                 max_indicator = indicator
 
     save_name = 'final_weights.pt'
-    save_checkpoint(cfg, model, save_name)
+    save_weights(cfg, model, save_name)
 
 
 def evaluate(cfg, frozen_encoder, model, test_dataset, estimator):
@@ -120,22 +126,21 @@ def eval(cfg, frozen_encoder, model, dataloader, estimator, device):
 
     estimator.reset()
     for test_data in dataloader:
-        if cfg.base.preload:
-            X_coarse, key_states, value_states, y = test_data
+        if cfg.dataset.preload_path:
+            X_side, key_states, value_states, y = test_data
             key_states, value_states = key_states.to(device), value_states.to(device)
             key_states = key_states.transpose(0, 1)
             value_states = value_states.transpose(0, 1)
         else:
-            X_fine, X_coarse, y = test_data
-            X_fine = X_fine.to(device)
+            X_lpm, X_side, y = test_data
+            X_lpm = X_lpm.to(device)
             with torch.no_grad():
-                _, key_states, value_states = frozen_encoder(X_fine, interpolate_pos_encoding=True)
+                _, key_states, value_states = frozen_encoder(X_lpm, interpolate_pos_encoding=True)
 
-        X_coarse, y = X_coarse.to(device), y.to(device)
+        X_side, y = X_side.to(device), y.to(device)
         y = select_target_type(y, cfg.train.criterion)
 
-        y_pred = model(X_coarse, key_states, value_states)
-
+        y_pred = model(X_side, key_states, value_states)
         estimator.update(y_pred, y)
 
     model.train()
@@ -170,7 +175,6 @@ def initialize_dataloader(cfg, train_dataset, val_dataset):
 # define loss and loss weights scheduler
 def initialize_loss(cfg, train_dataset):
     criterion = cfg.train.criterion
-    criterion_args = cfg.criterion_args[criterion]
 
     weight = None
     loss_weight_scheduler = None
@@ -183,17 +187,17 @@ def initialize_loss(cfg, train_dataset):
         elif isinstance(loss_weight, list):
             assert len(loss_weight) == len(train_dataset.classes)
             weight = torch.as_tensor(loss_weight, dtype=torch.float32, device=cfg.base.device)
-        loss = nn.CrossEntropyLoss(weight=weight, **criterion_args)
+        loss = nn.CrossEntropyLoss(weight=weight)
     elif criterion == 'mean_square_error':
-        loss = nn.MSELoss(**criterion_args)
+        loss = nn.MSELoss()
     elif criterion == 'mean_absolute_error':
-        loss = nn.L1Loss(**criterion_args)
+        loss = nn.L1Loss()
     elif criterion == 'smooth_L1':
-        loss = nn.SmoothL1Loss(**criterion_args)
+        loss = nn.SmoothL1Loss()
     elif criterion == 'kappa_loss':
-        loss = KappaLoss(**criterion_args)
+        loss = KappaLoss()
     elif criterion == 'focal_loss':
-        loss = FocalLoss(**criterion_args)
+        loss = FocalLoss()
     else:
         raise NotImplementedError('Not implemented loss function.')
 
@@ -203,35 +207,29 @@ def initialize_loss(cfg, train_dataset):
 
 # define optmizer
 def initialize_optimizer(cfg, model):
-    optimizer_strategy = cfg.solver.optimizer
-    learning_rate = cfg.solver.learning_rate
-    weight_decay = cfg.solver.weight_decay
-    momentum = cfg.solver.momentum
-    nesterov = cfg.solver.nesterov
-    adamw_betas = cfg.solver.adamw_betas
-
     parameters = model.parameters()
-
-    if optimizer_strategy == 'SGD':
+    solver = cfg.solver.optimizer
+    if solver == 'SGD':
         optimizer = torch.optim.SGD(
             parameters,
-            lr=learning_rate,
-            momentum=momentum,
-            nesterov=nesterov,
-            weight_decay=weight_decay
+            lr=cfg.dataset.learning_rate,
+            momentum=cfg.solver.momentum,
+            nesterov=cfg.solver.momentum,
+            weight_decay=cfg.solver.weight_decay
         )
-    elif optimizer_strategy == 'ADAM':
+    elif solver == 'ADAM':
         optimizer = torch.optim.Adam(
             parameters,
-            lr=learning_rate,
-            weight_decay=weight_decay
+            lr=cfg.dataset.learning_rate,
+            betas=cfg.solver.betas,
+            weight_decay=cfg.solver.weight_decay
         )
-    elif optimizer_strategy == 'ADAMW':
+    elif solver == 'ADAMW':
         optimizer = torch.optim.AdamW(
             parameters,
-            lr=learning_rate,
-            betas=adamw_betas,
-            weight_decay=weight_decay
+            lr=cfg.dataset.learning_rate,
+            betas=cfg.solver.betas,
+            weight_decay=cfg.solver.weight_decay
         )
     else:
         raise NotImplementedError('Not implemented optimizer.')
@@ -239,61 +237,45 @@ def initialize_optimizer(cfg, model):
     return optimizer
 
 
-# define learning rate scheduler
-def initialize_lr_scheduler(cfg, optimizer):
-    warmup_epochs = cfg.train.warmup_epochs
-    learning_rate = cfg.solver.learning_rate
-    scheduler_strategy = cfg.solver.lr_scheduler
-
-    if not scheduler_strategy:
-        lr_scheduler = None
-    else:
-        scheduler_args = cfg.scheduler_args[scheduler_strategy]
-        if scheduler_strategy == 'cosine':
-            lr_scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, **scheduler_args)
-        elif scheduler_strategy == 'multiple_steps':
-            lr_scheduler = torch.optim.lr_scheduler.MultiStepLR(optimizer, **scheduler_args)
-        elif scheduler_strategy == 'reduce_on_plateau':
-            lr_scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, **scheduler_args)
-        elif scheduler_strategy == 'exponential':
-            lr_scheduler = torch.optim.lr_scheduler.ExponentialLR(optimizer, **scheduler_args)
-        elif scheduler_strategy == 'clipped_cosine':
-            lr_scheduler = ClippedCosineAnnealingLR(optimizer, **scheduler_args)
-        else:
-            raise NotImplementedError('Not implemented learning rate scheduler.')
-
-    if warmup_epochs > 0:
-        warmup_scheduler = WarmupLRScheduler(optimizer, warmup_epochs, learning_rate)
-    else:
-        warmup_scheduler = None
-
-    return lr_scheduler, warmup_scheduler
-
-
 def adjust_learning_rate(cfg, optimizer, epoch):
     """Decays the learning rate with half-cycle cosine after warmup"""
     if epoch < cfg.train.warmup_epochs:
-        lr = cfg.solver.learning_rate * epoch / cfg.train.warmup_epochs
+        lr = cfg.dataset.learning_rate * epoch / cfg.train.warmup_epochs
     else:
-        lr = cfg.solver.learning_rate * 0.5 * (1. + math.cos(math.pi * (epoch - cfg.train.warmup_epochs) / (cfg.train.epochs - cfg.train.warmup_epochs)))
+        lr = cfg.dataset.learning_rate * 0.5 * (1. + math.cos(math.pi * (epoch - cfg.train.warmup_epochs) / (cfg.train.epochs - cfg.train.warmup_epochs)))
     for param_group in optimizer.param_groups:
         param_group['lr'] = lr
     return lr
 
 
-def adjust_distill_weight(cfg, epoch):
-    distill_weight = cfg.train.distill_weight * 0.5 * (1. + math.cos(math.pi * epoch / cfg.train.epochs))
-    return distill_weight
+def save_checkpoint(cfg, model, epoch, optimizer, save_name):
+    checkpoint = {
+        'epoch': epoch,
+        'state_dict': model.state_dict(),
+        'optimizer' : optimizer.state_dict()
+    }
+    checkpoint_path = os.path.join(cfg.dataset.save_path, save_name)
+    torch.save(checkpoint, checkpoint_path)
 
 
-def save_checkpoint(cfg, model, save_name):
-    save_path = os.path.join(cfg.base.save_path, save_name)
+def save_weights(cfg, model, save_name):
+    save_path = os.path.join(cfg.dataset.save_path, save_name)
     torch.save(model.state_dict(), save_path)
     print_msg('Model saved at {}'.format(save_path))
 
 
-def resume(cfg, model):
-    checkpoint = torch.load(cfg.base.resume_path, map_location=cfg.base.device)
-    model.load_state_dict(checkpoint)
-    print_msg('Model loaded from {}'.format(cfg.base.resume_path))
-    return model
+def resume(cfg, model, optimizer):
+    checkpoint = cfg.base.checkpoint
+    if os.path.exists(checkpoint):
+        print_msg('Loading checkpoint {}'.format(checkpoint))
+
+        checkpoint = torch.load(checkpoint, map_location='cpu')
+        start_epoch = checkpoint['epoch'] + 1
+        model.load_state_dict(checkpoint['state_dict'])
+        optimizer.load_state_dict(checkpoint['optimizer'])
+
+        print_msg('Loaded checkpoint {} from epoch {}'.format(checkpoint, checkpoint['epoch']))
+        return start_epoch
+    else:
+        print_msg('No checkpoint found at {}'.format(checkpoint))
+        raise FileNotFoundError('No checkpoint found at {}'.format(checkpoint))

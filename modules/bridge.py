@@ -16,17 +16,17 @@ class FineGrainedPromptTuning(torch.nn.Module):
 
 
 class FusionModule(torch.nn.Module):
-    def __init__(self, num_layer, in_dim, out_dim, num_heads, num_prompts, prompts_dim, p_dropout=0.5):
+    def __init__(self, num_layers, in_dim, out_dim, num_heads, num_prompts, p_dropout=0.5):
         super().__init__()
+        self.num_layers = num_layers
         self.in_dim = in_dim
         self.out_dim = out_dim
         self.num_heads = num_heads
         self.num_prompts = num_prompts
-        self.prompts_dim = prompts_dim
         self.head_size = in_dim // num_heads
 
-        self.prompts = nn.Parameter(torch.zeros(num_layer, 1, num_prompts, prompts_dim))
-        self.in_proj = torch.nn.Linear(prompts_dim, in_dim)
+        self.prompts = nn.Parameter(torch.zeros(num_layers, 1, num_prompts, in_dim))
+        self.layer_norm = nn.LayerNorm(in_dim)
         self.out_proj = torch.nn.Linear(in_dim, out_dim)
         self.dropout = nn.Dropout(p_dropout)
 
@@ -38,8 +38,11 @@ class FusionModule(torch.nn.Module):
         return x.permute(0, 1, 3, 2, 4)
 
     def forward(self, key_layer, value_layer):
+        assert key_layer.shape[0] == self.num_layers, 'Key layer should have the same number of layers as the fusion module.'
+        assert value_layer.shape[0] == self.num_layers, 'Value layer should have the same number of layers as the fusion module.'
         prompts = self.prompts.expand(-1, key_layer.shape[1], -1, -1)
-        query_layer = self.transpose_for_scores(self.in_proj(prompts))
+        query_layer = self.layer_norm(prompts)
+        query_layer = self.transpose_for_scores(query_layer)
 
         attention_scores = torch.matmul(query_layer, key_layer.transpose(-1, -2))
         attention_scores = attention_scores / math.sqrt(self.head_size)
@@ -49,7 +52,8 @@ class FusionModule(torch.nn.Module):
         context_layer = context_layer.permute(0, 1, 3, 2, 4).contiguous()
         new_context_layer_shape = context_layer.size()[:-2] + (self.in_dim,)
         context_layer = context_layer.view(new_context_layer_shape)
+
+        context_layer = context_layer + prompts
         context_layer = self.out_proj(context_layer)
         context_layer = self.dropout(context_layer)
-        context_layer = context_layer + prompts
         return context_layer

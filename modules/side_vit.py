@@ -375,7 +375,9 @@ class ViTEncoder(nn.Module):
         all_self_attentions = () if output_attentions else None
 
         for i, layer_module in enumerate(self.layer):
-            fine_grained_prompts = fine_grained_states[i] if fine_grained_states is not None else None
+            fine_grained_prompts = None
+            if fine_grained_states is not None:
+                fine_grained_prompts = fine_grained_states[i]
             if output_hidden_states:
                 all_hidden_states = all_hidden_states + (hidden_states,)
 

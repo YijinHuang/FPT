@@ -12,32 +12,32 @@ def pil_loader(path):
 
 
 class AsymetricImageFolder(datasets.ImageFolder):
-    def __init__(self, root, fine_transform=None, coarse_transform=None, loader=pil_loader):
+    def __init__(self, root, lpm_transform=None, side_transform=None, loader=pil_loader):
         super(AsymetricImageFolder, self).__init__(root, loader=loader)
-        self.fine_transform = fine_transform
-        self.coarse_transform = coarse_transform
+        self.lpm_transform = lpm_transform
+        self.side_transform = side_transform
 
     def __getitem__(self, index):
         path, target = self.samples[index]
         sample = self.loader(path)
-        fine_sample = self.fine_transform(sample)
-        coarse_sample = self.coarse_transform(sample)
+        lpm_sample = self.lpm_transform(sample)
+        side_sample = self.side_transform(sample)
 
-        return fine_sample, coarse_sample, target
+        return lpm_sample, side_sample, target
 
 
 class PreloadImageFolder(datasets.ImageFolder):
-    def __init__(self, root, preload_path, coarse_transform=None, loader=pil_loader):
+    def __init__(self, root, preload_path, side_transform=None, loader=pil_loader):
         super(PreloadImageFolder, self).__init__(root, loader=loader)
         self.preload_path = preload_path
-        self.coarse_transform = coarse_transform
+        self.side_transform = side_transform
 
     def __getitem__(self, index):
         path, target = self.samples[index]
         sample = self.loader(path)
-        coarse_sample = self.coarse_transform(sample)
+        side_sample = self.side_transform(sample)
         key_states, value_states = self.preload(path)
-        return coarse_sample, key_states, value_states, target
+        return side_sample, key_states, value_states, target
 
     def preload(self, path):
         states_path = os.path.join(self.preload_path, Path(path).stem + '.safetensors')
@@ -47,13 +47,13 @@ class PreloadImageFolder(datasets.ImageFolder):
 
 
 class FineImageFolder(datasets.ImageFolder):
-    def __init__(self, root, fine_transform=None, loader=pil_loader):
+    def __init__(self, root, lpm_transform=None, loader=pil_loader):
         super(FineImageFolder, self).__init__(root, loader=loader)
-        self.fine_features = {}
-        self.fine_transform = fine_transform
+        self.lpm_features = {}
+        self.lpm_transform = lpm_transform
 
     def __getitem__(self, index):
         path, _ = self.samples[index]
         sample = self.loader(path)
-        fine_sample = self.fine_transform(sample)
-        return path, fine_sample
+        lpm_sample = self.lpm_transform(sample)
+        return path, lpm_sample
