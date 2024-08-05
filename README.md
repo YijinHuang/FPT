@@ -11,6 +11,7 @@ We present Fine-grained Prompt Tuning (FPT) and FPT+ for medical image classific
 ![Framework](./framework.png)
 
 
+
 ## Performance
 Performance using a ViT-B backbone with DINO pre-trained weights:
 | Method           | # Learnable Parameters | Memory Usage | Average AUC |
@@ -23,6 +24,7 @@ Performance using a ViT-B backbone with DINO pre-trained weights:
 | FPT+             | 1.03                   | 736          | 87.12       |
 
 
+
 ## Installation
 To install the dependencies, run:
 ```bash
@@ -31,6 +33,7 @@ conda create -n fpt python=3.8
 conda activate fpt
 pip install -r requirements.txt
 ```
+
 
 
 ## Dataset
@@ -45,10 +48,11 @@ Eight publicly accessible datasets are used in this work:
 - **CHNCXR (Chest X-ray)** [[Homepage](http://archive.nlm.nih.gov/repos/chestImages.php)]
 
 
+
 ## How to Use
 We use the Messidor-2 dataset as an example in the instructions.
 
-#### 1. Build Dataset
+### 1. Build dataset
 Organize the Messidor-2 dataset as follows:
 
 ```
@@ -68,27 +72,28 @@ messidor2_dataset/
 
 Ensure the `val` and `test` directories have the same structure as `train`. Then, update the `data_path` value in `/configs/dataset/messidor2.yaml` with the path to the Messidor-2 dataset.
 
-#### 2. Preloading
+### 2. Preloading
 Pre-store features from LPM by running:
 ```bash
 python preload.py dataset=messidor2
 ```
 
-#### 3. Training
+### 3. Training
 To train the model, run:
 ```bash
 python main.py dataset=messidor2
 ```
 
 
+
 ## Train on Your Own Dataset
-#### 1. Build Your Dataset
+### 1. Build your dataset
 Organize your dataset similarly to Messidor-2.
 
-#### 2. Create and Update Configurations
+### 2. Create and update configurations
 Update the configurations marked as '???' in `/configs/dataset/customized.yaml`.
 
-#### 3. Preloading
+### 3. Preloading
 ```bash
 python preload.py dataset=customized
 ```
@@ -98,24 +103,25 @@ python preload.py dataset=customized ++train.batch_size=4
 ```
 After preloading, FPT or FPT+ can still be run with a large batch size.
 
-#### 4. Training
+### 4. Training
 To train the model, run:
 ```bash
 python main.py dataset=customized
 ```
 
 
+
 ## Other Configurations
 You can update the configurations in `/configs`. Hydra is employed to manage configurations. For advanced usage, please check the [Hydra documentation](https://hydra.cc/docs/intro/).
 
-#### Run FPT
+### 1. Run FPT
 The default method is FPT+. To run FPT, update the command to:
 ```bash
 python preload.py network=FPT
 python main.py network=FPT
 ```
 
-#### Pre-trained Model
+### 2. Pre-trained model
 Most ViT-based models from [Hugging Face](https://huggingface.co/models) uploaded by google/facebook/timm can be directly employed. Default pre-trained weights is `google/vit-base-patch16-384`. To change the LPM, set the pre-trained path in `/configs/network/FPT+.yaml` or update the command to:
 ```bash
 python main.py ++network.pretrained_path=google/vit-base-patch16-384
@@ -126,23 +132,24 @@ Validated pre-trained weights in this work:
 - facebook/dino-vitb8
 - facebook/dino-vitb16
 
-#### Disable Prelading
+### 3. Disable prelading
 To disable preloading, set the 'preload_path' in `/configs/dataset/your_dataset.yaml` to 'null' or update the command to:
 ```bash
 python main.py ++dataset.preload_path=null
 ```
 
-#### Learning Rate
+### 4. Learning rate
 To change the learning rate, set the 'learning_rate' in `/configs/dataset/your_dataset.yaml` or update the command to:
 ```bash
 python main.py ++dataset.learning_rate=0.0001
 ```
 
-#### Random Seed
+### 5. Random seed
 To control randomness, set the 'seed' to a non-negative integer in `/configs/config.yaml` or update the command to:
 ```bash
 python main.py ++base.seed=0
 ```
+
 
 
 ## Citation
