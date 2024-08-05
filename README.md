@@ -2,7 +2,7 @@
 
 This is the official implementation of the papers:
 
-> Y. Huang, P. Cheng, R. Tam, and X. Tang, "FPT+: A Parameter and Memory Efficient Transfer Learning Method for High-resolution Medical Image Classification", Under review, 2024
+> Y. Huang, P. Cheng, R. Tam, and X. Tang, "FPT+: A Parameter and Memory Efficient Transfer Learning Method for High-resolution Medical Image Classification", under review, 2024
 
 > Y. Huang, P. Cheng, R. Tam, and X. Tang, "Fine-grained Prompt Tuning: A Parameter and Memory Efficient Transfer Learning Method for High-resolution Medical Image Classification", MICCAI, 2024 (accepted) [[arXiv](https://arxiv.org/abs/2403.07576)]
 
@@ -16,6 +16,7 @@ Performance using a ViT-B backbone with DINO pre-trained weights:
 | Method           | # Learnable Parameters | Memory Usage | Average AUC |
 |------------------|:----------------------:|:------------:|:-----------:|
 | Full fine-tuning | 100                    | 23128        | 88.82       |
+| Prompt-tuning    | 0.17                   | 20582        | 83.68       |
 | Adapter          | 2.03                   | 19360        | 84.14       |
 | LoRA             | 0.68                   | 20970        | 85.94       |
 | FPT              | 1.81                   | 1824         | 86.40       |
@@ -47,7 +48,7 @@ Eight publicly accessible datasets are used in this work:
 ## How to Use
 We use the Messidor-2 dataset as an example in the instructions.
 
-### 1. Build Dataset
+#### 1. Build Dataset
 Organize the Messidor-2 dataset as follows:
 
 ```
@@ -67,13 +68,13 @@ messidor2_dataset/
 
 Ensure the `val` and `test` directories have the same structure as `train`. Then, update the `data_path` value in `/configs/dataset/messidor2.yaml` with the path to the Messidor-2 dataset.
 
-### 2. Preloading
+#### 2. Preloading
 Pre-store features from LPM by running:
 ```bash
 python preload.py dataset=messidor2
 ```
 
-### 3. Training
+#### 3. Training
 To train the model, run:
 ```bash
 python main.py dataset=messidor2
@@ -81,13 +82,13 @@ python main.py dataset=messidor2
 
 
 ## Train on Your Own Dataset
-### 1. Build Your Dataset
+#### 1. Build Your Dataset
 Organize your dataset similarly to Messidor-2.
 
-### 2. Create and Update Configurations
+#### 2. Create and Update Configurations
 Update the configurations marked as '???' in `/configs/dataset/customized.yaml`.
 
-### 3. Preloading
+#### 3. Preloading
 ```bash
 python preload.py dataset=customized
 ```
@@ -97,7 +98,7 @@ python preload.py dataset=customized ++train.batch_size=4
 ```
 After preloading, FPT or FPT+ can still be run with a large batch size.
 
-### 4. Training
+#### 4. Training
 To train the model, run:
 ```bash
 python main.py dataset=customized
@@ -107,14 +108,14 @@ python main.py dataset=customized
 ## Other Configurations
 You can update the configurations in `/configs`. Hydra is employed to manage configurations. For advanced usage, please check the [Hydra documentation](https://hydra.cc/docs/intro/).
 
-### Run FPT
+#### Run FPT
 The default method is FPT+. To run FPT, update the command to:
 ```bash
 python preload.py network=FPT
 python main.py network=FPT
 ```
 
-### Pre-trained Model
+#### Pre-trained Model
 Most ViT-based models from [Hugging Face](https://huggingface.co/models) uploaded by google/facebook/timm can be directly employed. Default pre-trained weights is `google/vit-base-patch16-384`. To change the LPM, set the pre-trained path in `/configs/network/FPT+.yaml` or update the command to:
 ```bash
 python main.py ++network.pretrained_path=google/vit-base-patch16-384
@@ -125,19 +126,19 @@ Validated pre-trained weights in this work:
 - facebook/dino-vitb8
 - facebook/dino-vitb16
 
-### Disable Prelading
+#### Disable Prelading
 To disable preloading, set the 'preload_path' in `/configs/dataset/your_dataset.yaml` to 'null' or update the command to:
 ```bash
 python main.py ++dataset.preload_path=null
 ```
 
-### Learning Rate
+#### Learning Rate
 To change the learning rate, set the 'learning_rate' in `/configs/dataset/your_dataset.yaml` or update the command to:
 ```bash
 python main.py ++dataset.learning_rate=0.0001
 ```
 
-### Random Seed
+#### Random Seed
 To control randomness, set the 'seed' to a non-negative integer in `/configs/config.yaml` or update the command to:
 ```bash
 python main.py ++base.seed=0
