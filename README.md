@@ -2,9 +2,9 @@
 
 This is the official implementation of the papers:
 
-> Y. Huang, P. Cheng, R. Tam, and X. Tang, "FPT+: A Parameter and Memory Efficient Transfer Learning Method for High-resolution Medical Image Classification", under review, 2024
+> Y. Huang, P. Cheng, R. Tam, and X. Tang, "FPT+: A Parameter and Memory Efficient Transfer Learning Method for High-resolution Medical Image Classification", under review, 2024. [[arXiv](https://arxiv.org/abs/2408.02426)]
 
-> Y. Huang, P. Cheng, R. Tam, and X. Tang, "Fine-grained Prompt Tuning: A Parameter and Memory Efficient Transfer Learning Method for High-resolution Medical Image Classification", MICCAI, 2024 (accepted) [[arXiv](https://arxiv.org/abs/2403.07576)]
+> Y. Huang, P. Cheng, R. Tam, and X. Tang, "Fine-grained Prompt Tuning: A Parameter and Memory Efficient Transfer Learning Method for High-resolution Medical Image Classification", MICCAI, 2024. (accepted) [[arXiv](https://arxiv.org/abs/2403.07576)]
 
 We present Fine-grained Prompt Tuning (FPT) and FPT+ for medical image classification. FPT and FPT+ are parameter-efficient transfer learning (PETL) methods that significantly improve memory efficiency over existing PETL methods, especially in the high-resolution context commonly encountered in medical image analysis.
 
@@ -13,7 +13,7 @@ We present Fine-grained Prompt Tuning (FPT) and FPT+ for medical image classific
 
 
 ## Performance
-Performance using a ViT-B backbone with DINO pre-trained weights:
+Performance using a ViT-B backbone initialized with ImageNet-21K pre-trained weights:
 | Method           | # Learnable Parameters | Memory Usage | Average AUC |
 |------------------|:----------------------:|:------------:|:-----------:|
 | Full fine-tuning | 100                    | 23128        | 88.82       |
@@ -158,7 +158,7 @@ If you find this repository useful, please cite the papers:
 @article{huang2024fptp,
   title={FPT+: A Parameter and Memory Efficient Transfer Learning Method for High-resolution Medical Image Classification},
   author={Huang, Yijin and Cheng, Pujin and Tam, Roger and Tang, Xiaoying},
-  journal={arXiv preprint},
+  journal={arXiv preprint arXiv:2408.02426},
   year={2024}
 }
 
