@@ -50,13 +50,17 @@ def build_model(cfg):
     )
     num_layers = len(parse_layers(cfg.network.layers_to_extract))
     vit_config = ViTConfig.from_pretrained(cfg.network.pretrained_path)
-    side_dimension = vit_config.hidden_size // 8
+    side_dimension = vit_config.hidden_size // cfg.network.side_reduction_ratio
+    prompts_dim = vit_config.hidden_size // cfg.network.prompt_reduction_ratio
     fusion_module = FusionModule(
         num_layers=num_layers,
         in_dim=vit_config.hidden_size,
         out_dim=side_dimension,
         num_heads=vit_config.num_attention_heads,
-        num_prompts=cfg.network.num_prompts
+        num_prompts=cfg.network.num_prompts,
+        prompt_dim=prompts_dim,
+        prompt_norm=cfg.network.prompt_norm,
+        prompt_proj=cfg.network.prompt_proj
     )
 
     side_config = ViTConfig.from_pretrained(

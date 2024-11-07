@@ -1,5 +1,8 @@
 num_prompts: 16
-reduction_ratio: 8
+side_reduction_ratio: 8
+prompt_reduction_ratio: 1
+prompt_norm: true
+prompt_proj: false
 layers_to_extract: 6-11 # use x-y to present a range of layers, or use x,y,z to present a list of layers
 token_ratio: 0.2
 token_imp: global

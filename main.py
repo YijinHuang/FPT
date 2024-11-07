@@ -12,7 +12,7 @@ from data.builder import generate_dataset
 from modules.builder import generate_model, load_weights
 
 
-@hydra.main(version_base=None, config_path="configs", config_name="config")
+@hydra.main(config_path="configs", config_name="config")
 def main(cfg):
     # print configuration
     print_msg('LOADING CONFIG FILE')

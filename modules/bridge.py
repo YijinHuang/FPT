@@ -16,7 +16,8 @@ class FineGrainedPromptTuning(torch.nn.Module):
 
 
 class FusionModule(torch.nn.Module):
-    def __init__(self, num_layers, in_dim, out_dim, num_heads, num_prompts, p_dropout=0.5):
+    def __init__(self, num_layers, in_dim, out_dim, num_heads, num_prompts, 
+                 prompt_dim=None, prompt_norm=True, prompt_proj=False, p_dropout=0.5):
         super().__init__()
         self.num_layers = num_layers
         self.in_dim = in_dim
@@ -25,8 +26,13 @@ class FusionModule(torch.nn.Module):
         self.num_prompts = num_prompts
         self.head_size = in_dim // num_heads
 
-        self.prompts = nn.Parameter(torch.zeros(num_layers, 1, num_prompts, in_dim))
-        self.layer_norm = nn.LayerNorm(in_dim)
+        self.prompt_dim = in_dim if prompt_dim is None else prompt_dim
+        assert prompt_proj or self.prompt_dim == in_dim, 'Prompt projection is required when prompt dimension is different from input dimension.'
+
+        self.prompts = nn.Parameter(torch.zeros(num_layers, 1, num_prompts, self.prompt_dim))
+        self.layer_norm = nn.LayerNorm(self.prompt_dim) if prompt_norm else nn.Identity()
+        self.prompt_proj = nn.Linear(self.prompt_dim, in_dim) if prompt_proj else nn.Identity()
+
         self.out_proj = torch.nn.Linear(in_dim, out_dim)
         self.dropout = nn.Dropout(p_dropout)
 
@@ -41,7 +47,7 @@ class FusionModule(torch.nn.Module):
         assert key_layer.shape[0] == self.num_layers, 'Key layer should have the same number of layers as the fusion module.'
         assert value_layer.shape[0] == self.num_layers, 'Value layer should have the same number of layers as the fusion module.'
         prompts = self.prompts.expand(-1, key_layer.shape[1], -1, -1)
-        query_layer = self.layer_norm(prompts)
+        query_layer = self.prompt_proj(self.layer_norm(prompts))
         query_layer = self.transpose_for_scores(query_layer)
 
         attention_scores = torch.matmul(query_layer, key_layer.transpose(-1, -2))
@@ -53,7 +59,11 @@ class FusionModule(torch.nn.Module):
         new_context_layer_shape = context_layer.size()[:-2] + (self.in_dim,)
         context_layer = context_layer.view(new_context_layer_shape)
 
-        context_layer = context_layer + prompts
-        context_layer = self.out_proj(context_layer)
+        if self.prompt_dim == self.in_dim:
+            context_layer = context_layer + prompts
+            context_layer = self.out_proj(context_layer)
+        else:
+            context_layer = self.out_proj(context_layer)
+            context_layer = context_layer + prompts
         context_layer = self.dropout(context_layer)
         return context_layer

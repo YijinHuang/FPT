@@ -115,16 +115,17 @@ python main.py dataset=customized
 You can update the configurations in `/configs`. Hydra is employed to manage configurations. For advanced usage, please check the [Hydra documentation](https://hydra.cc/docs/intro/).
 
 ### 1. Run FPT
-The default method is FPT+. To run FPT, update the command to:
+The default method is FPT+. To run FPT, update the command with `network=FPT`:
 ```bash
-python preload.py network=FPT
-python main.py network=FPT
+python preload.py dataset=messidor2 network=FPT
+python main.py dataset=messidor2 network=FPT
 ```
+Note that FPT+ and FPT doesn't share the preloaded features.
 
 ### 2. Pre-trained model
 Most ViT-based models from [Hugging Face](https://huggingface.co/models) uploaded by google/facebook/timm can be directly employed. Default pre-trained weights is `google/vit-base-patch16-384`. To change the LPM, set the pre-trained path in `/configs/network/FPT+.yaml` or update the command to:
 ```bash
-python main.py ++network.pretrained_path=google/vit-base-patch16-384
+python main.py dataset=messidor2 ++network.pretrained_path=google/vit-base-patch16-384
 ```
 Validated pre-trained weights in this work:
 - google/vit-base-patch16-384
@@ -135,19 +136,19 @@ Validated pre-trained weights in this work:
 ### 3. Disable prelading
 To disable preloading, set the 'preload_path' in `/configs/dataset/your_dataset.yaml` to 'null' or update the command to:
 ```bash
-python main.py ++dataset.preload_path=null
+python main.py dataset=messidor2 ++dataset.preload_path=null
 ```
 
 ### 4. Learning rate
 To change the learning rate, set the 'learning_rate' in `/configs/dataset/your_dataset.yaml` or update the command to:
 ```bash
-python main.py ++dataset.learning_rate=0.0001
+python main.py dataset=messidor2 ++dataset.learning_rate=0.0001
 ```
 
 ### 5. Random seed
 To control randomness, set the 'seed' to a non-negative integer in `/configs/config.yaml` or update the command to:
 ```bash
-python main.py ++base.seed=0
+python main.py dataset=messidor2 ++base.seed=0
 ```
 
 
