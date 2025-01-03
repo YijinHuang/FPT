@@ -2,7 +2,7 @@
 
 This is the official implementation of the papers:
 
-> Y. Huang, P. Cheng, R. Tam, and X. Tang, "FPT+: A Parameter and Memory Efficient Transfer Learning Method for High-resolution Medical Image Classification", under review, 2024. [[arXiv](https://arxiv.org/abs/2408.02426)]
+> Y. Huang, P. Cheng, R. Tam, and X. Tang, "Boosting Memory Efficiency in Transfer Learning for High-Resolution Medical Image Classification", under review, 2025. [[arXiv](https://arxiv.org/abs/2408.02426)]
 
 > Y. Huang, P. Cheng, R. Tam, and X. Tang, "Fine-grained Prompt Tuning: A Parameter and Memory Efficient Transfer Learning Method for High-resolution Medical Image Classification", MICCAI, 2024. (accepted) [[arXiv](https://arxiv.org/abs/2403.07576)]
 
@@ -156,11 +156,11 @@ python main.py dataset=messidor2 ++base.seed=0
 ## Citation
 If you find this repository useful, please cite the papers:
 ```bibtex
-@article{huang2024fptp,
-  title={FPT+: A Parameter and Memory Efficient Transfer Learning Method for High-resolution Medical Image Classification},
+@article{huang2025fptp,
+  title={Boosting Memory Efficiency in Transfer Learning for High-Resolution Medical Image Classification},
   author={Huang, Yijin and Cheng, Pujin and Tam, Roger and Tang, Xiaoying},
   journal={arXiv preprint arXiv:2408.02426},
-  year={2024}
+  year={2025}
 }
 
 @article{huang2024fpt,
