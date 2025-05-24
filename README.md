@@ -2,9 +2,9 @@
 
 This is the official implementation of the papers:
 
-> Y. Huang, P. Cheng, R. Tam, and X. Tang, "Boosting Memory Efficiency in Transfer Learning for High-Resolution Medical Image Classification", under review, 2025. [[arXiv](https://arxiv.org/abs/2408.02426)]
+> Y. Huang, P. Cheng, R. Tam, and X. Tang, "Boosting Memory Efficiency in Transfer Learning for High-Resolution Medical Image Classification", IEEE Transactions on Neural Networks and Learning Systems (TNNLS), accepted, 2025. [[early access](https://ieeexplore.ieee.org/document/11014499)] [[arXiv](https://arxiv.org/abs/2408.02426)]
 
-> Y. Huang, P. Cheng, R. Tam, and X. Tang, "Fine-grained Prompt Tuning: A Parameter and Memory Efficient Transfer Learning Method for High-resolution Medical Image Classification", MICCAI, 2024. (accepted) [[arXiv](https://arxiv.org/abs/2403.07576)]
+> Y. Huang, P. Cheng, R. Tam, and X. Tang, "Fine-grained Prompt Tuning: A Parameter and Memory Efficient Transfer Learning Method for High-resolution Medical Image Classification", In International Conference on Medical Image Computing and Computer-Assisted Intervention (MICCAI), 2024. [[miccai](https://papers.miccai.org/miccai-2024/paper/2750_paper.pdf)] [[arXiv](https://arxiv.org/abs/2403.07576)]
 
 We present Fine-grained Prompt Tuning (FPT) and FPT+ for medical image classification. FPT and FPT+ are parameter-efficient transfer learning (PETL) methods that significantly improve memory efficiency over existing PETL methods, especially in the high-resolution context commonly encountered in medical image analysis.
 
@@ -159,14 +159,16 @@ If you find this repository useful, please cite the papers:
 @article{huang2025fptp,
   title={Boosting Memory Efficiency in Transfer Learning for High-Resolution Medical Image Classification},
   author={Huang, Yijin and Cheng, Pujin and Tam, Roger and Tang, Xiaoying},
-  journal={arXiv preprint arXiv:2408.02426},
+  journal={IEEE Transactions on Neural Networks and Learning Systems},
   year={2025}
 }
 
-@article{huang2024fpt,
-  title={Fine-grained Prompt Tuning: A Parameter and Memory Efficient Transfer Learning Method for High-resolution Medical Image Classification},
+@inproceedings{huang2024fine,
+  title={Fine-grained prompt tuning: A parameter and memory efficient transfer learning method for high-resolution medical image classification},
   author={Huang, Yijin and Cheng, Pujin and Tam, Roger and Tang, Xiaoying},
-  journal={arXiv preprint arXiv:2403.07576},
-  year={2024}
+  booktitle={International Conference on Medical Image Computing and Computer-Assisted Intervention},
+  pages={120--130},
+  year={2024},
+  organization={Springer}
 }
 ```
