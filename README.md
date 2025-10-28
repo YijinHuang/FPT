@@ -2,7 +2,7 @@
 
 This is the official implementation of the papers:
 
-> Y. Huang, P. Cheng, R. Tam, and X. Tang, "Boosting Memory Efficiency in Transfer Learning for High-Resolution Medical Image Classification", IEEE Transactions on Neural Networks and Learning Systems (TNNLS), accepted, 2025. [[early access](https://ieeexplore.ieee.org/document/11014499)] [[arXiv](https://arxiv.org/abs/2408.02426)]
+> Y. Huang, P. Cheng, R. Tam, and X. Tang, "Boosting Memory Efficiency in Transfer Learning for High-Resolution Medical Image Classification", IEEE Transactions on Neural Networks and Learning Systems (TNNLS), 2025. [[tnnls](https://ieeexplore.ieee.org/document/11014499)] [[arXiv](https://arxiv.org/abs/2408.02426)]
 
 > Y. Huang, P. Cheng, R. Tam, and X. Tang, "Fine-grained Prompt Tuning: A Parameter and Memory Efficient Transfer Learning Method for High-resolution Medical Image Classification", In International Conference on Medical Image Computing and Computer-Assisted Intervention (MICCAI), 2024. [[miccai](https://papers.miccai.org/miccai-2024/paper/2750_paper.pdf)] [[arXiv](https://arxiv.org/abs/2403.07576)]
 
@@ -157,10 +157,15 @@ python main.py dataset=messidor2 ++base.seed=0
 If you find this repository useful, please cite the papers:
 ```bibtex
 @article{huang2025fptp,
-  title={Boosting Memory Efficiency in Transfer Learning for High-Resolution Medical Image Classification},
   author={Huang, Yijin and Cheng, Pujin and Tam, Roger and Tang, Xiaoying},
-  journal={IEEE Transactions on Neural Networks and Learning Systems},
-  year={2025}
+  journal={IEEE Transactions on Neural Networks and Learning Systems}, 
+  title={Boosting Memory Efficiency in Transfer Learning for High-Resolution Medical Image Classification}, 
+  year={2025},
+  volume={36},
+  number={9},
+  pages={17280-17294},
+  keywords={Adaptation models;Memory management;Transfer learning;Training;Tuning;Medical diagnostic imaging;Graphics processing units;Transformers;Image classification;Costs;High-resolution medical image classification;large-scale pretrained models;memory-efficient transfer learning;parameter-efficient transfer learning (PETL)},
+  doi={10.1109/TNNLS.2025.3569797}}
 }
 
 @inproceedings{huang2024fine,
@@ -172,3 +177,4 @@ If you find this repository useful, please cite the papers:
   organization={Springer}
 }
 ```
+
