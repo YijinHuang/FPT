@@ -3,7 +3,7 @@ data_path: /path/to/dataset/DDSM/
 preload_path: ./preload_data/ddsm
 save_path: ./runs/ddsm
 input_size: 512 # image resolution for the LPM
-num_classes: 2 # number of classes
+num_classes: 3 # number of classes
 mean: [0.2026701271533966, 0.2026701271533966, 0.2026701271533966] # 'auto' or a list of three numbers for RGB
 std: [0.22466830909252167, 0.22466830909252167, 0.22466830909252167] # 'auto' or a list of three numbers for RGB
 learning_rate: 0.001 # dataset-specific learning rate
